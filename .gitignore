@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+
+# Node
+node_modules/
+dist/
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Notebooks
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Vite env overrides (you'll use .env.local for VITE_API_URL in dev)
+.env.local
+.env.*.local
+
+# Python tool caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Saved models (these can balloon fast once you start comparing runs)
+*.pkl
+*.joblib
+cookies.txt
