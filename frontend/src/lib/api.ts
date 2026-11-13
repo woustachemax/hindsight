@@ -1,54 +1,8 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+// Local, backend-free auth. Session state lives in localStorage so the
+// existing login/register/me/logout call sites keep working without a server.
+// Swap these implementations for real network calls once a backend exists.
 
-const ACCESS_TOKEN_KEY = 'auth_token'
-
-export function getToken(): string | null {
-  return localStorage.getItem(ACCESS_TOKEN_KEY)
-}
-
-export function setToken(token: string): void {
-  localStorage.setItem(ACCESS_TOKEN_KEY, token)
-}
-
-export function clearToken(): void {
-  localStorage.removeItem(ACCESS_TOKEN_KEY)
-}
-
-export async function apiRequest<T = unknown>(
-  endpoint: string,
-  options: RequestInit = {}
-): Promise<T> {
-  const token = getToken()
-  const url = `${BASE_URL}${endpoint}`
-
-  const response = await fetch(url, {
-    ...options,
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...options.headers,
-    },
-  })
-
-  if (!response.ok) {
-    let message = `${response.status} ${response.statusText}`
-    try {
-      const body = await response.json()
-      if (typeof body.detail === 'string') {
-        message = body.detail
-      } else if (Array.isArray(body.detail)) {
-        message = body.detail.map((e: { msg: string }) => e.msg).join(', ')
-      }
-    } catch {
-      void 0
-    }
-    throw new Error(message)
-  }
-
-  if (response.status === 204) return undefined as T
-  return response.json()
-}
+const SESSION_KEY = 'hindsight_session'
 
 export type AuthUser = {
   id: string
@@ -56,15 +10,37 @@ export type AuthUser = {
   username: string
 }
 
+function readSession(): AuthUser | null {
+  try {
+    const raw = localStorage.getItem(SESSION_KEY)
+    return raw ? (JSON.parse(raw) as AuthUser) : null
+  } catch {
+    return null
+  }
+}
+
+function writeSession(user: AuthUser): void {
+  localStorage.setItem(SESSION_KEY, JSON.stringify(user))
+}
+
+function validate(email: string, password: string): void {
+  if (!email.trim() || !password) {
+    throw new Error('email and password are required')
+  }
+}
+
 export async function login(
   email: string,
   password: string
 ): Promise<AuthUser> {
-  const data = await apiRequest<AuthUser>('/auth/login', {
-    method: 'POST',
-    body: JSON.stringify({ email, password }),
-  })
-  return data
+  validate(email, password)
+  const existing = readSession()
+  const user: AuthUser =
+    existing && existing.email === email
+      ? existing
+      : { id: crypto.randomUUID(), email, username: email.split('@')[0] }
+  writeSession(user)
+  return user
 }
 
 export async function register(
@@ -72,21 +48,19 @@ export async function register(
   email: string,
   password: string
 ): Promise<AuthUser> {
-  const data = await apiRequest<AuthUser>('/auth/register', {
-    method: 'POST',
-    body: JSON.stringify({ name: username, email, password }),
-  })
-  return data
+  validate(email, password)
+  if (!username.trim()) throw new Error('username is required')
+  const user: AuthUser = { id: crypto.randomUUID(), email, username }
+  writeSession(user)
+  return user
 }
 
 export async function me(): Promise<AuthUser> {
-  return apiRequest<AuthUser>('/auth/me')
+  const user = readSession()
+  if (!user) throw new Error('not signed in')
+  return user
 }
 
 export async function logout(): Promise<void> {
-  try {
-    await apiRequest('/auth/logout', { method: 'POST' })
-  } finally {
-    clearToken()
-  }
+  localStorage.removeItem(SESSION_KEY)
 }

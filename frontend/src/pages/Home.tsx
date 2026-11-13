@@ -7,17 +7,6 @@ export const Home = () => {
   const navigate = useNavigate()
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    const token = params.get("token")
-
-    if (token) {
-      window.history.replaceState({}, "", "/")
-      me()
-        .then(() => navigate("/dashboard"))
-        .catch(() => void 0)
-      return
-    }
-
     me()
       .then(() => navigate("/dashboard"))
       .catch(() => void 0)

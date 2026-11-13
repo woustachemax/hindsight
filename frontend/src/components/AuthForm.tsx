@@ -302,40 +302,6 @@ export const AuthForm = () => {
                   </span>
                 </button>
 
-                <div className="relative flex items-center justify-center py-1">
-                  <div className="absolute inset-x-0 top-1/2 h-px bg-white/5" />
-                  <span
-                    className="relative px-3 font-mono text-[8px] uppercase tracking-[0.3em]"
-                    style={{ backgroundColor: COLORS.panel, color: "rgba(255,255,255,0.15)" }}
-                  >
-                    external providers
-                  </span>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    const base = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000"
-                    window.location.href = `${base}/auth/google/login`
-                  }}
-                  className="flex w-full items-center justify-center font-mono text-[10px] uppercase tracking-[0.24em] border px-4 py-3 transition-all duration-200"
-                  style={{
-                    borderColor: COLORS.border,
-                    backgroundColor: "rgba(0,0,0,0.2)",
-                    color: "rgba(255,255,255,0.4)",
-                    boxShadow: SHADOWS.input,
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(255,255,255,0.12)"
-                    ;(e.currentTarget as HTMLButtonElement).style.backgroundColor = "rgba(255,255,255,0.03)"
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.borderColor = COLORS.border
-                    ;(e.currentTarget as HTMLButtonElement).style.backgroundColor = "rgba(0,0,0,0.2)"
-                  }}
-                >
-                  continue with Google
-                </button>
               </div>
 
               <div
